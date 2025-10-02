@@ -1,0 +1,64 @@
+/* Additional custom styles */
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Tab active state enhancement */
+#tabs button {
+    transition: all 0.2s ease;
+}
+
+#tabs button:hover {
+    transform: translateY(-2px);
+}
+
+/* Smooth content transitions */
+[id^="content-"] {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Print styles */
+@media print {
+    #formContainer,
+    #loadingContainer,
+    button {
+        display: none !important;
+    }
+
+    #resultsContainer {
+        display: block !important;
+    }
+
+    #tabs {
+        display: none !important;
+    }
+
+    [id^="content-"] {
+        display: block !important;
+        page-break-after: always;
+    }
+}
