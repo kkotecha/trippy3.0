@@ -31,9 +31,15 @@ def create_workflow():
     workflow.add_edge("country_research", "route_planning")
     workflow.add_edge("route_planning", "transport_planning")
     workflow.add_edge("transport_planning", "city_processing")
+
+    # Parallel execution: budget_compilation and logistics run simultaneously
     workflow.add_edge("city_processing", "budget_compilation")
-    workflow.add_edge("budget_compilation", "logistics")
+    workflow.add_edge("city_processing", "logistics")
+
+    # Compiler waits for both parallel branches to complete
+    workflow.add_edge("budget_compilation", "compiler")
     workflow.add_edge("logistics", "compiler")
+
     workflow.add_edge("compiler", END)
 
     # Compile with memory for checkpointing
