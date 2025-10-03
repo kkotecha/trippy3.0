@@ -6,6 +6,7 @@ from typing import Optional
 def _get_country_code(country_name: str) -> Optional[str]:
     """
     Get ISO 3166-1 alpha-2 country code from country name using RestCountries API.
+    Handles both country names and major city names.
 
     Args:
         country_name: Full country name (e.g., "Japan", "United States") or ISO code (e.g., "IN", "US")
@@ -16,6 +17,47 @@ def _get_country_code(country_name: str) -> Optional[str]:
     # If already a 2-letter code, return as-is
     if len(country_name) == 2 and country_name.isalpha():
         return country_name.upper()
+
+    # Map common cities to countries
+    city_to_country = {
+        "dubai": "AE",
+        "abu dhabi": "AE",
+        "tokyo": "JP",
+        "kyoto": "JP",
+        "osaka": "JP",
+        "paris": "FR",
+        "london": "GB",
+        "new york": "US",
+        "los angeles": "US",
+        "singapore": "SG",
+        "hong kong": "HK",
+        "bangkok": "TH",
+        "delhi": "IN",
+        "mumbai": "IN",
+        "sydney": "AU",
+        "melbourne": "AU",
+        "toronto": "CA",
+        "vancouver": "CA",
+        "rome": "IT",
+        "milan": "IT",
+        "barcelona": "ES",
+        "madrid": "ES",
+        "berlin": "DE",
+        "amsterdam": "NL",
+        "brussels": "BE",
+        "zurich": "CH",
+        "vienna": "AT",
+        "prague": "CZ",
+        "istanbul": "TR",
+        "seoul": "KR",
+        "beijing": "CN",
+        "shanghai": "CN"
+    }
+
+    # Check if it's a known city
+    country_name_lower = country_name.lower()
+    if country_name_lower in city_to_country:
+        return city_to_country[country_name_lower]
 
     try:
         url = f"https://restcountries.com/v3.1/name/{country_name}"

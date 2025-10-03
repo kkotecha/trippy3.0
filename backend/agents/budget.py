@@ -22,8 +22,14 @@ def budget_compilation_node(state: TripPlannerState) -> dict:
     # Calculate transport costs
     total_transport = 0
     for leg in transport_legs:
-        cost_str = leg["cost"].replace("$", "").split("-")[0]
-        total_transport += int(cost_str)
+        cost_str = leg["cost"].replace("$", "").split("-")[0].strip()
+        # Remove "(estimated)" or other non-numeric text
+        cost_str = cost_str.split("(")[0].split()[0].strip()
+        try:
+            total_transport += int(cost_str)
+        except ValueError:
+            # If parsing fails, use a default estimate
+            total_transport += 50
 
     # Estimate food costs
     food_per_day = {"budget": 30, "moderate": 60, "luxury": 120}[budget_tier]

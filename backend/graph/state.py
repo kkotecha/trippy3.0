@@ -54,6 +54,7 @@ class CityState(TypedDict):
     nights: int
     interests: List[str]
     budget_tier: str
+    country: str  # Added for local transport lookups
 
     # Outputs
     accommodation_options: List[Dict]

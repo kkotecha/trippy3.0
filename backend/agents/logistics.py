@@ -7,9 +7,10 @@ def logistics_node(state: TripPlannerState) -> dict:
     Role: Travel Preparation Expert
     """
     country = state["country"]
+    nationality = state.get("nationality", "India")
     duration = state["total_duration"]
 
-    visa_info = get_visa_requirements.invoke({"country": country})
+    visa_info = get_visa_requirements.invoke({"country": country, "nationality": nationality})
     currency_info = get_currency_info.invoke({"country": country})
 
     packing_list = [

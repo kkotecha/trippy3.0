@@ -14,7 +14,21 @@ This document analyzes all tools in the system and identifies which ones are sta
 
 ---
 
-### 2. `optimize_route` (calculation_tools.py)
+### 2. `get_visa_requirements` (knowledge_tools.py) - **UPGRADED ✅**
+**Status:** ✅ Fully dynamic (Recently implemented)
+**Implementation:** Passport Index API (free, no auth)
+**Details:** See section below for full implementation details.
+
+---
+
+### 3. `get_currency_info` (knowledge_tools.py) - **UPGRADED ✅**
+**Status:** ✅ Fully dynamic (Recently implemented)
+**Implementation:** RestCountries API + ExchangeRate-API (both free)
+**Details:** See section below for full implementation details.
+
+---
+
+### 4. `optimize_route` (calculation_tools.py)
 **Current Behavior:** Uses geopy/Nominatim to geocode cities and calculate optimal route using greedy nearest-neighbor algorithm
 **Status:** ✅ Mostly dynamic
 **Why it works:** Makes real API calls to OpenStreetMap's Nominatim service for geocoding, calculates real distances
@@ -24,7 +38,7 @@ This document analyzes all tools in the system and identifies which ones are sta
 
 ## ❌ STATIC/DUMMY TOOLS (Need Improvement)
 
-### 3. `search_hotels` (hotel_tools.py)
+### 5. `search_hotels` (hotel_tools.py)
 **Current Behavior:** Returns completely mock/fake hotel data
 ```python
 hotels = [
@@ -51,7 +65,7 @@ hotels = [
 
 ---
 
-### 4. `search_trains` (transport_tools.py)
+### 6. `search_trains` (transport_tools.py)
 **Current Behavior:** Uses hardcoded dictionary with only 3 predefined routes
 ```python
 routes = {
@@ -80,7 +94,7 @@ routes = {
 
 ---
 
-### 5. `search_attractions` (attraction_tools.py)
+### 7. `search_attractions` (attraction_tools.py)
 **Current Behavior:** Returns generic mock attractions for any city
 ```python
 all_attractions = [
@@ -110,68 +124,80 @@ all_attractions = [
 
 ---
 
-### 6. `get_visa_requirements` (knowledge_tools.py)
-**Current Behavior:** Uses tiny hardcoded dictionary with only 4 countries
+### 8. `get_visa_requirements` (knowledge_tools.py) - **[MOVED TO DYNAMIC SECTION]**
+**Current Behavior:** ✅ **NOW DYNAMIC** - Uses Passport Index API (free, no auth required)
 ```python
-visa_info = {
-    "Japan": "Visa-free for US/EU/Australian...",
-    "Italy": "Schengen visa...",
-    "Thailand": "Visa-free for most...",
-    "France": "Schengen visa..."
-}
+# Passport Index API - free, comprehensive
+url = f"https://rough-sun-2523.fly.dev/visa/{nationality_code}/{destination_code}"
 ```
 
-**Why it's dummy:**
-- Only knows visa info for 4 countries (Japan, Italy, Thailand, France)
-- Information is static and could be outdated (visa policies change frequently)
-- Doesn't account for user's nationality (assumes US/EU)
-- Generic fallback message for all other countries
+**Status:** ✅ **Fully Dynamic (Updated)**
 
-**How to make dynamic:**
-- Integrate with **VisaDB API** or **Passport Index API** for comprehensive visa data
-- Include user's nationality as input parameter to provide personalized visa requirements
-- Use **Sherpa API** (used by airlines) for real-time visa/entry requirements including COVID rules
-- Fallback to web_search for countries not covered by API
-- Include processing times, costs, required documents, embassy locations
+**Why it works:**
+- Uses free Passport Index API for real-time visa requirements
+- Supports **ALL countries worldwide** (not just 4 hardcoded ones)
+- Accepts user's nationality as input parameter for personalized requirements
+- Returns actual visa categories: Visa Free, Visa on Arrival, eVisa, Visa Required
+- Includes duration of stay from API data
+- Falls back to static data only if API fails
+- Uses RestCountries API to resolve country names to ISO codes
 
-**Suggested APIs:**
-- Sherpa° API: https://apply.joinsherpa.com/travel-restrictions (most comprehensive, used by airlines)
-- VisaDB API: https://www.visadb.io/api
-- Passport Index API: https://www.passportindex.org/
+**Implementation:**
+- Primary: Passport Index API (https://rough-sun-2523.fly.dev)
+- Fallback: Static data for 4 countries (Japan, Italy, Thailand, France)
+- Helper: RestCountries API for country code resolution
+- No API key required
+- No rate limits
+
+**Future enhancements:**
+- Add Sherpa° API for COVID/health requirements
+- Include processing times, costs, required documents
+- Add embassy location lookup
 
 ---
 
-### 7. `get_currency_info` (knowledge_tools.py)
-**Current Behavior:** Hardcoded dictionary with 4 countries
+### 9. `get_currency_info` (knowledge_tools.py) - **[MOVED TO DYNAMIC SECTION]**
+**Current Behavior:** ✅ **NOW DYNAMIC** - Uses RestCountries API + ExchangeRate-API (both free)
 ```python
-currencies = {
-    "Japan": {"code": "JPY", "symbol": "¥", "notes": "..."},
-    "Italy": {"code": "EUR", "symbol": "€", "notes": "..."},
-    ...
-}
+# RestCountries API - free, comprehensive
+url = f"https://restcountries.com/v3.1/name/{country}"
+# ExchangeRate-API - free
+rate_url = "https://api.exchangerate-api.com/v4/latest/USD"
 ```
 
-**Why it's dummy:**
-- Only 4 countries hardcoded
-- Static tips/notes that may be outdated
-- No exchange rates or currency conversion
-- No real-time financial information
+**Status:** ✅ **Fully Dynamic (Updated)**
 
-**How to make dynamic:**
-- Use **RestCountries API** (free) for comprehensive country/currency data for all countries
-- Integrate **exchangerate-api.com** or **fixer.io** for real-time exchange rates
-- Add currency conversion calculator feature
-- Include current exchange rates, best places to exchange money, ATM fees info
-- Use web_search for additional local payment customs/tips
+**Why it works:**
+- Uses RestCountries API for currency data for **ALL countries worldwide**
+- Real-time exchange rates from ExchangeRate-API
+- Returns currency code, name, symbol, and current exchange rate to USD
+- No hardcoded countries - works for any destination
+- Falls back to static data only if APIs fail
+- Completely free APIs with no authentication required
 
-**Suggested APIs:**
-- RestCountries API: https://restcountries.com/ (free, comprehensive country data including currency)
-- ExchangeRate-API: https://www.exchangerate-api.com/ (free tier available)
-- Wise API: https://wise.com/gb/business/rate-feed (real mid-market rates)
+**Implementation:**
+- Primary: RestCountries API (https://restcountries.com) for currency metadata
+- Secondary: ExchangeRate-API (https://api.exchangerate-api.com) for live rates
+- Fallback: Static data for 4 countries if both APIs fail
+- No API key required
+- No rate limits
+
+**Returns:**
+- Currency code (e.g., "JPY")
+- Currency name (e.g., "Japanese yen")
+- Symbol (e.g., "¥")
+- Live exchange rate (e.g., "1 USD = 147.09 JPY")
+- General usage notes
+
+**Future enhancements:**
+- Add historical rate trends
+- Include ATM fee information by country
+- Add currency conversion calculator
+- Include best places to exchange money
 
 ---
 
-### 8. `calculate_travel_time` (calculation_tools.py)
+### 10. `calculate_travel_time` (calculation_tools.py)
 **Current Behavior:** Uses geopy for geodesic distance, assumes fixed 80 km/h average speed
 ```python
 distance_km = geodesic(coords1, coords2).km
@@ -202,43 +228,51 @@ estimated_hours = distance_km / 80  # Fixed speed assumption
 
 ## SUMMARY TABLE
 
-| Tool | Status | API Needed | Priority |
-|------|--------|------------|----------|
-| `web_search` | ✅ Dynamic | Already using Tavily | N/A |
-| `optimize_route` | ⚠️ Mostly Dynamic | Consider better TSP solver | Low |
-| `search_hotels` | ❌ Fully Static | Booking.com / RapidAPI | **HIGH** |
-| `search_trains` | ❌ Fully Static | Rome2Rio / Trainline | **HIGH** |
-| `search_attractions` | ❌ Fully Static | Google Places / TripAdvisor | **HIGH** |
-| `get_visa_requirements` | ❌ Fully Static | Sherpa / VisaDB | Medium |
-| `get_currency_info` | ❌ Fully Static | RestCountries + ExchangeRate-API | Medium |
-| `calculate_travel_time` | ⚠️ Partially Static | Google Directions / Rome2Rio | Medium |
+| Tool | Status | API Used | Priority |
+|------|--------|----------|----------|
+| `web_search` | ✅ Dynamic | Tavily API | N/A |
+| `get_visa_requirements` | ✅ Dynamic **[UPGRADED]** | Passport Index API (free) | ✅ **DONE** |
+| `get_currency_info` | ✅ Dynamic **[UPGRADED]** | RestCountries + ExchangeRate-API | ✅ **DONE** |
+| `optimize_route` | ⚠️ Mostly Dynamic | Nominatim (OSM) | Low |
+| `search_hotels` | ❌ Fully Static | Need: Booking.com / RapidAPI | **HIGH** |
+| `search_trains` | ❌ Fully Static | Need: Rome2Rio / Trainline | **HIGH** |
+| `search_attractions` | ❌ Fully Static | Need: Google Places / TripAdvisor | **HIGH** |
+| `calculate_travel_time` | ⚠️ Partially Static | Need: Google Directions / Rome2Rio | Medium |
 
 ---
 
 ## RECOMMENDED IMPLEMENTATION ORDER
 
-### Phase 1: Critical Travel Data (Highest Impact)
+### ✅ Phase 0: Supporting Information (COMPLETED)
+1. ✅ **get_currency_info** - Real-time currency data with exchange rates (RestCountries + ExchangeRate-API)
+2. ✅ **get_visa_requirements** - Real visa requirements for all nationalities (Passport Index API)
+
+### Phase 1: Critical Travel Data (Highest Impact) - **NEXT PRIORITY**
 1. **search_hotels** - Users need real hotel options and prices
 2. **search_attractions** - Core functionality for daily planning
 3. **search_trains** - Essential for multi-city route planning
 
-### Phase 2: Supporting Information (Medium Impact)
-4. **calculate_travel_time** - Improve route planning accuracy
-5. **get_visa_requirements** - Important for international travel
-6. **get_currency_info** - Helpful for budget planning
+### Phase 2: Enhanced Routing (Medium Impact)
+4. **calculate_travel_time** - Improve route planning accuracy with real transport data
 
 ### Phase 3: Optimization (Lower Priority)
-7. **optimize_route** - Upgrade from greedy to optimal TSP solver
+5. **optimize_route** - Upgrade from greedy to optimal TSP solver
 
 ---
 
 ## COST CONSIDERATIONS
 
-### Free Tier Options
+### ✅ Currently Using (Free)
+- ✅ **Tavily API** - Web search (free tier available)
+- ✅ **RestCountries API** - Completely free, no limits
+- ✅ **ExchangeRate-API** - Free tier (1,500 requests/month)
+- ✅ **Passport Index API** - Completely free, no auth required
+- ✅ **Nominatim (OSM)** - Free but rate-limited
+
+### Free Tier Options (For Phase 1)
 - Google Places API: $200/month credit (covers ~28,000 requests)
-- RestCountries API: Completely free
-- ExchangeRate-API: 1,500 requests/month free
-- Nominatim (current): Free but rate-limited
+- Google Directions API: Included in $200/month credit
+- Foursquare Places API: Free tier available
 
 ### Paid/Affiliate Options
 - Booking.com: Affiliate commission-based (free to integrate, earn from bookings)
@@ -247,4 +281,5 @@ estimated_hours = distance_km / 80  # Fixed speed assumption
 - Sherpa API: Contact for pricing (enterprise-focused)
 
 ### Development Strategy
-Start with free tiers and Google APIs for Phase 1, then add affiliate APIs (Booking.com, TripAdvisor) which can generate revenue through commissions.
+✅ **Phase 0 Complete**: Implemented free APIs for visa and currency data with zero cost.
+**Next**: Start with free tiers (Google Places) for Phase 1, then add affiliate APIs (Booking.com, TripAdvisor) which can generate revenue through commissions.
