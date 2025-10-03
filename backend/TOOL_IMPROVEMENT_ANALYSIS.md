@@ -38,89 +38,136 @@ This document analyzes all tools in the system and identifies which ones are sta
 
 ## ❌ STATIC/DUMMY TOOLS (Need Improvement)
 
-### 5. `search_hotels` (hotel_tools.py)
-**Current Behavior:** Returns completely mock/fake hotel data
+### 5. `search_hotels` (hotel_tools.py) - **UPGRADED ✅**
+**Status:** ✅ Fully dynamic (Recently implemented)
+**Implementation:** Google Places API (free tier: $200/month credit)
+
+**Current Behavior:** Uses Google Places Text Search API for real hotel data
 ```python
-hotels = [
-    {"name": f"{city} Central Hotel", "price_per_night": f"${mid_price}", ...}
-]
+url = "https://maps.googleapis.com/maps/api/place/textsearch/json"
+params = {"query": f"{tier_keywords[budget_tier]} in {city}", "type": "lodging"}
 ```
 
-**Why it's dummy:**
-- Generates fake hotel names like "Tokyo Central Hotel", "Tokyo Budget Inn"
-- Uses generic price ranges based on budget tier only
-- Returns fake booking links (e.g., "https://booking.com/tokyo-hotel-1")
-- No real hotel data or availability checks
+**Why it works:**
+- Fetches **real hotels** from Google Places database for any city worldwide
+- Returns actual hotel names, addresses, and ratings from Google Maps
+- Filters hotels with **rating ≥ 3.0 stars** only (quality control)
+- Budget-tier specific queries ("budget hostel", "luxury boutique hotel")
+- Links to **Google Maps business profiles** (not Booking.com)
+- Dynamic verbiage based on rating:
+  - 4.5+ stars: "Exceptional"
+  - 4.0-4.4 stars: "Highly rated"
+  - 3.5-3.9 stars: "Well-rated"
+  - 3.0-3.4 stars: "Rated"
+- Includes real review counts and addresses
+- Falls back to mock data only if API fails
 
-**How to make dynamic:**
-- Integrate with **Booking.com API** (preferred) or **Hotels.com API** for real hotel data
-- Alternative: Use **Google Places API** to find actual hotels with reviews/ratings
-- Include real-time availability, actual prices, genuine booking links
-- Consider user's travel dates for accurate pricing and availability
+**Implementation Details:**
+- API: Google Places Text Search
+- Cost: Free tier ($200/month credit = ~900 trips/month)
+- Quality filter: Only hotels with rating ≥ 3.0
+- Link format: `https://www.google.com/maps/place/?q=place_id:{place_id}`
+- No authentication required (uses GOOGLE_MAPS_API_KEY from .env)
 
-**Suggested APIs:**
-- Booking.com Affiliate API: https://www.booking.com/affiliate-program/
-- RapidAPI Hotel endpoints: https://rapidapi.com/hub (Booking.com, Hotels.com wrappers)
-- Google Places API with type='lodging'
+**Recent Improvements:**
+- ✅ Added 3.0 star minimum rating filter
+- ✅ Replaced Booking.com links with Google Maps business profiles
+- ✅ Dynamic rating descriptions (prevents "Highly rated (2.5 stars)")
+- ✅ Real review counts displayed
 
 ---
 
-### 6. `search_trains` (transport_tools.py)
-**Current Behavior:** Uses hardcoded dictionary with only 3 predefined routes
+### 6. `search_trains` (transport_tools.py) - **UPGRADED ✅**
+**Status:** ✅ Fully dynamic (Recently implemented)
+**Implementation:** Google Directions API with transit mode (free tier: $200/month credit)
+
+**Current Behavior:** Uses Google Directions API for real train/transit routes
 ```python
-routes = {
-    ("Tokyo", "Kyoto", "Japan"): {...},
-    ("Kyoto", "Osaka", "Japan"): {...},
-    ("Paris", "Lyon", "France"): {...}
+url = "https://maps.googleapis.com/maps/api/directions/json"
+params = {
+    "origin": from_city,
+    "destination": to_city,
+    "mode": "transit",
+    "transit_mode": "train|rail"
 }
 ```
 
-**Why it's dummy:**
-- Only knows about 3 specific routes (Tokyo-Kyoto, Kyoto-Osaka, Paris-Lyon)
-- Returns generic fallback for all other city pairs
-- No real-time schedules, pricing, or availability
-- Can't handle any country beyond Japan/France examples
+**Why it works:**
+- Fetches **real train/transit routes** between any two cities worldwide
+- Returns actual duration, distance, and transit details from Google
+- Generates affiliate booking links to **Rome2Rio** and **Omio** for actual booking
+- Works for any city pair globally (not limited to Japan/France)
+- Estimates costs based on distance and country
+- Includes transit provider names when available
+- Falls back to mock data only if API fails
 
-**How to make dynamic:**
-- Integrate with **Rome2Rio API** for multi-modal transport between any two cities worldwide
-- Alternative: Use **Trainline API** (Europe), **Omio API** (Europe/US), **Rail Europe API**
-- For specific countries: JR Pass API (Japan), SNCF API (France), Amtrak API (USA), Indian Railways API
-- Include real schedules, current pricing, booking links, and seat availability
+**Implementation Details:**
+- API: Google Directions API (transit mode)
+- Cost: Free tier ($200/month credit shared with Places API)
+- Booking links: Rome2Rio + Omio affiliate URLs
+- No authentication required (uses GOOGLE_MAPS_API_KEY from .env)
 
-**Suggested APIs:**
-- Rome2Rio API: https://www.rome2rio.com/api/ (comprehensive, multi-modal)
-- Trainline Partner API: https://www.thetrainline.com/partners
-- Omio Affiliate API: https://www.omio.com/affiliate-program
+**Returned Data:**
+- Actual duration (e.g., "2h 15m") from Google
+- Real distance in km
+- Estimated cost based on distance formula
+- Transit provider details when available
+- Clickable booking links to Rome2Rio and Omio
+
+**Future Enhancements:**
+- Add real-time pricing APIs (currently estimated)
+- Include train schedules and departure times
+- Add seat availability checking
+- Support for train passes (JR Pass, Eurail, etc.)
 
 ---
 
-### 7. `search_attractions` (attraction_tools.py)
-**Current Behavior:** Returns generic mock attractions for any city
+### 7. `search_attractions` (attraction_tools.py) - **UPGRADED ✅**
+**Status:** ✅ Fully dynamic (Recently implemented)
+**Implementation:** Google Places API Text Search (free tier: $200/month credit)
+
+**Current Behavior:** Uses Google Places API to find real attractions based on user interests
 ```python
-all_attractions = [
-    {"name": f"{city} Historic Temple", "category": "temple", ...},
-    {"name": f"{city} Food Market", "category": "food", ...},
+url = "https://maps.googleapis.com/maps/api/place/textsearch/json"
+# Maps interests to place types
+interest_map = {
+    "temple": ["hindu_temple", "church", "mosque", "place_of_worship"],
+    "food": ["restaurant", "cafe", "food", "meal_takeaway"],
+    "museum": ["museum", "art_gallery", "cultural_center"],
     ...
-]
+}
 ```
 
-**Why it's dummy:**
-- Generates fake attraction names by concatenating city name + generic type
-- Only 4 hardcoded attraction templates (temple, food market, museum, tech center)
-- No real addresses, real operating hours, or actual descriptions
-- Simply filters mock data by interest categories
+**Why it works:**
+- Fetches **real attractions** from Google Places database for any city worldwide
+- Maps user interests to appropriate Google place types
+- Returns actual attraction names, addresses, ratings from Google Maps
+- Includes real operating hours, admission info, and descriptions
+- Smart interest matching (e.g., "temples" → searches hindu_temple, church, mosque)
+- Falls back to mock data only if API fails
+- Provides Google Maps links for each attraction
 
-**How to make dynamic:**
-- Integrate with **Google Places API** with appropriate types (tourist_attraction, museum, restaurant, etc.)
-- Alternative: **TripAdvisor Content API** for attractions with reviews, photos, rankings
-- Alternative: **Foursquare Places API** for POIs with categories matching interests
-- Use web_search as fallback for lesser-known destinations
-- Include real photos, verified opening hours, actual admission prices, user reviews
+**Implementation Details:**
+- API: Google Places Text Search
+- Cost: Free tier ($200/month credit shared with Hotels/Trains)
+- Interest categories: temple, food, museum, beach, shopping, nature, culture, technology, nightlife
+- Returns: name, address, rating, hours, cost estimates, descriptions
+- Link format: Google Maps URLs for navigation
 
-**Suggested APIs:**
-- Google Places API: https://developers.google.com/maps/documentation/places/web-service/search
-- TripAdvisor Content API: https://www.tripadvisor.com/developers
-- Foursquare Places API: https://location.foursquare.com/developer/
+**Supported Interests:**
+- Religious sites (temples, churches, mosques)
+- Food & dining (restaurants, cafes, markets)
+- Culture (museums, art galleries, theaters)
+- Nature (parks, beaches, hiking trails)
+- Shopping (malls, markets, boutiques)
+- Technology (tech centers, innovation hubs)
+- Nightlife (bars, clubs, entertainment)
+
+**Future Enhancements:**
+- Add TripAdvisor integration for reviews and rankings
+- Include real-time crowd levels
+- Add ticket booking integration
+- Include user-generated photos
 
 ---
 
@@ -226,6 +273,79 @@ estimated_hours = distance_km / 80  # Fixed speed assumption
 
 ---
 
+### 11. `local_transport_node` (city_processing.py) - **UPGRADED ✅**
+**Status:** ✅ Fully dynamic (Recently implemented)
+**Implementation:** Hybrid approach - Google Places API + Tavily Web Search
+
+**Current Behavior:** Uses multiple data sources for comprehensive local transport info
+```python
+# Google Places for transit systems
+transit_info = get_transit_system_info(city)  # e.g., "Tokyo Metro"
+
+# Web search for specific details
+day_pass_cost = search_transport_costs(city, country)
+taxi_apps = search_taxi_apps(city, country)  # ["Uber", "Careem", "Grab"]
+bike_rentals = search_bike_rentals(city, country)
+```
+
+**Why it works:**
+- **Transit systems**: Google Places API finds real metro/subway station names
+- **Day pass costs**: Web search extracts pricing from city transit websites
+- **Taxi apps**: Web search identifies available ride-sharing services per city
+- **Bike rentals**: Web search finds city-specific bike sharing services
+- City-specific data (e.g., Dubai shows "Careem", Tokyo shows "Lime, Bird")
+- Falls back to generic data only if all sources fail
+
+**Implementation Details:**
+- Transit API: Google Places Text Search (transit_station type)
+- Search API: Tavily web search for costs, apps, bikes
+- Cost: Free tier (shared with other Google/Tavily usage)
+- Returns: metro_system, day_pass_cost, taxi_apps[], bike_rentals, walking_friendly, notes
+
+**Example Output (Dubai vs Tokyo):**
+- Dubai: metro_system="Dubai Metro", taxi_apps=["Uber", "Careem", "Hala"]
+- Tokyo: metro_system="Tokyo Metro", taxi_apps=["Uber", "Lyft", "Grab"], bike_rentals="Lime, Bird"
+
+**Recent Improvements:**
+- ✅ Dynamic transit system names from Google Places
+- ✅ City-specific taxi app detection via web search
+- ✅ Bike sharing service identification
+- ✅ Country parameter passed for better search context
+
+---
+
+### 12. `get_restaurant_recommendations` (city_processing.py) - **UPGRADED ✅**
+**Status:** ✅ Fully dynamic (Recently implemented)
+**Implementation:** Google Places API Text Search
+
+**Current Behavior:** Finds real restaurants based on meal type and budget tier
+```python
+meal_queries = {
+    "budget": {"breakfast": f"cheap breakfast cafe in {city}", ...},
+    "moderate": {"breakfast": f"popular breakfast spot in {city}", ...},
+    "luxury": {"breakfast": f"upscale breakfast brunch in {city}", ...}
+}
+```
+
+**Why it works:**
+- Fetches **real restaurants** from Google Places for each meal
+- Budget-aware queries (cheap/popular/upscale)
+- Meal-specific pricing ranges:
+  - Breakfast: $5-25 depending on budget tier
+  - Lunch: $10-40 depending on budget tier
+  - Dinner: $15-80 depending on budget tier
+- Returns restaurant name, cost estimate, and rating
+- Called dynamically for each day of itinerary
+
+**Implementation Details:**
+- API: Google Places Text Search
+- Meals covered: breakfast, lunch, dinner
+- Budget tiers: budget, moderate, luxury
+- Returns: name, cost, rating from Google
+- Cost: Free tier (shared Google Places quota)
+
+---
+
 ## SUMMARY TABLE
 
 | Tool | Status | API Used | Priority |
@@ -233,11 +353,13 @@ estimated_hours = distance_km / 80  # Fixed speed assumption
 | `web_search` | ✅ Dynamic | Tavily API | N/A |
 | `get_visa_requirements` | ✅ Dynamic **[UPGRADED]** | Passport Index API (free) | ✅ **DONE** |
 | `get_currency_info` | ✅ Dynamic **[UPGRADED]** | RestCountries + ExchangeRate-API | ✅ **DONE** |
+| `search_hotels` | ✅ Dynamic **[UPGRADED]** | Google Places API | ✅ **DONE** |
+| `search_trains` | ✅ Dynamic **[UPGRADED]** | Google Directions API | ✅ **DONE** |
+| `search_attractions` | ✅ Dynamic **[UPGRADED]** | Google Places API | ✅ **DONE** |
+| `local_transport_node` | ✅ Dynamic **[UPGRADED]** | Google Places + Tavily Search | ✅ **DONE** |
+| `get_restaurant_recommendations` | ✅ Dynamic **[UPGRADED]** | Google Places API | ✅ **DONE** |
 | `optimize_route` | ⚠️ Mostly Dynamic | Nominatim (OSM) | Low |
-| `search_hotels` | ❌ Fully Static | Need: Booking.com / RapidAPI | **HIGH** |
-| `search_trains` | ❌ Fully Static | Need: Rome2Rio / Trainline | **HIGH** |
-| `search_attractions` | ❌ Fully Static | Need: Google Places / TripAdvisor | **HIGH** |
-| `calculate_travel_time` | ⚠️ Partially Static | Need: Google Directions / Rome2Rio | Medium |
+| `calculate_travel_time` | ⚠️ Partially Static | Nominatim (OSM) | Low |
 
 ---
 
@@ -247,39 +369,56 @@ estimated_hours = distance_km / 80  # Fixed speed assumption
 1. ✅ **get_currency_info** - Real-time currency data with exchange rates (RestCountries + ExchangeRate-API)
 2. ✅ **get_visa_requirements** - Real visa requirements for all nationalities (Passport Index API)
 
-### Phase 1: Critical Travel Data (Highest Impact) - **NEXT PRIORITY**
-1. **search_hotels** - Users need real hotel options and prices
-2. **search_attractions** - Core functionality for daily planning
-3. **search_trains** - Essential for multi-city route planning
+### ✅ Phase 1: Critical Travel Data (COMPLETED)
+1. ✅ **search_hotels** - Real hotel options with ratings ≥3.0, Google Maps links
+2. ✅ **search_attractions** - Dynamic attractions based on user interests via Google Places
+3. ✅ **search_trains** - Real transit routes via Google Directions with Rome2Rio/Omio booking links
 
-### Phase 2: Enhanced Routing (Medium Impact)
-4. **calculate_travel_time** - Improve route planning accuracy with real transport data
+### ✅ Phase 2: Enhanced Daily Planning (COMPLETED)
+4. ✅ **get_restaurant_recommendations** - Real restaurants for breakfast/lunch/dinner per budget tier
+5. ✅ **local_transport_node** - Dynamic transit info, taxi apps, bike rentals per city
 
-### Phase 3: Optimization (Lower Priority)
-5. **optimize_route** - Upgrade from greedy to optimal TSP solver
+### Phase 3: Optimization (Lower Priority) - **NEXT**
+6. **calculate_travel_time** - Improve route planning accuracy with real transport data
+7. **optimize_route** - Upgrade from greedy to optimal TSP solver
 
 ---
 
 ## COST CONSIDERATIONS
 
-### ✅ Currently Using (Free)
-- ✅ **Tavily API** - Web search (free tier available)
-- ✅ **RestCountries API** - Completely free, no limits
+### ✅ Currently Using (All Free/Free Tier)
+- ✅ **Tavily API** - Web search (free tier: 1,000 searches/month)
+- ✅ **Google Places API** - Hotels, attractions, restaurants, transit ($200/month credit = ~900 trips)
+- ✅ **Google Directions API** - Train routes ($200/month credit shared with Places)
+- ✅ **RestCountries API** - Completely free, unlimited
 - ✅ **ExchangeRate-API** - Free tier (1,500 requests/month)
 - ✅ **Passport Index API** - Completely free, no auth required
-- ✅ **Nominatim (OSM)** - Free but rate-limited
+- ✅ **Nominatim (OSM)** - Free but rate-limited (used for route optimization)
 
-### Free Tier Options (For Phase 1)
-- Google Places API: $200/month credit (covers ~28,000 requests)
-- Google Directions API: Included in $200/month credit
-- Foursquare Places API: Free tier available
+### Cost Breakdown (Monthly Estimates)
+**Google Maps Platform** (Places + Directions):
+- Free tier: $200/month credit
+- Places Text Search: $17 per 1,000 requests
+- Directions API: $5 per 1,000 requests
+- Estimated usage per trip: ~15-20 API calls
+- **Capacity: ~900 trips/month within free tier**
 
-### Paid/Affiliate Options
-- Booking.com: Affiliate commission-based (free to integrate, earn from bookings)
-- TripAdvisor: Affiliate model available
-- Rome2Rio: Paid API but comprehensive
-- Sherpa API: Contact for pricing (enterprise-focused)
+**Tavily Search API**:
+- Free tier: 1,000 searches/month
+- Usage: ~3-5 searches per trip (transport costs, taxi apps, bike rentals)
+- **Capacity: ~200-300 trips/month within free tier**
+
+**Other APIs**: All unlimited or sufficient free tiers
+
+### Affiliate/Revenue Opportunities
+- ✅ **Rome2Rio** - Affiliate links for train bookings (commission-based)
+- ✅ **Omio** - Affiliate links for transport bookings (commission-based)
+- 🔜 **Booking.com** - Future integration for hotel commissions
+- 🔜 **TripAdvisor** - Future integration for attraction tickets
 
 ### Development Strategy
-✅ **Phase 0 Complete**: Implemented free APIs for visa and currency data with zero cost.
-**Next**: Start with free tiers (Google Places) for Phase 1, then add affiliate APIs (Booking.com, TripAdvisor) which can generate revenue through commissions.
+✅ **Phases 0-2 Complete**: All critical tools now dynamic using free tier APIs.
+- Zero upfront cost
+- ~200-900 trips/month capacity (limited by Tavily free tier)
+- Revenue potential through affiliate links
+**Next**: Monitor usage, upgrade APIs if traffic grows beyond free tiers.
