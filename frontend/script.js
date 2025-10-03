@@ -9,6 +9,7 @@ document.getElementById('tripForm').addEventListener('submit', async (e) => {
 
     const formData = new FormData(e.target);
     const request = {
+        nationality: formData.get('nationality') || 'India',
         country: formData.get('country'),
         total_duration: parseInt(formData.get('total_duration')),
         interests: formData.get('interests').split(',').map(s => s.trim()),

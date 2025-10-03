@@ -10,17 +10,18 @@ def country_research_node(state: TripPlannerState) -> dict:
     Role: Destination Intelligence Specialist
     Tools: web_search, get_visa_requirements, get_currency_info
     """
+    nationality = state.get("nationality", "India")
     country = state["country"]
 
     # System prompt
     system_prompt = f"""You are a Destination Intelligence Specialist with 15 years of experience.
 
-Your task: Research {country} for trip planning.
+Your task: Research {country} for trip planning for travelers from {nationality}.
 
 Provide:
 1. Country overview (culture, language, key facts)
 2. Best months to visit (climate, seasons, events)
-3. Visa requirements
+3. Visa requirements for {nationality} citizens
 4. Safety and health advisories
 5. Currency and practical tips
 
@@ -33,7 +34,7 @@ Use your tools to gather current information. Be factual and helpful."""
     # Invoke LLM
     messages = [
         SystemMessage(content=system_prompt),
-        HumanMessage(content=f"Research {country} for trip planning")
+        HumanMessage(content=f"Research {country} for trip planning for {nationality} citizens")
     ]
 
     response = llm_with_tools.invoke(messages)
@@ -68,6 +69,6 @@ Use your tools to gather current information. Be factual and helpful."""
     return {
         "country_overview": output,
         "best_months_to_visit": "Spring and Fall (best weather)",  # Parsed from output
-        "visa_info": get_visa_requirements.invoke({"country": country}),
+        "visa_info": get_visa_requirements.invoke({"country": country, "nationality": nationality}),
         "safety_info": "Generally safe for tourists"
     }

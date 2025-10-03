@@ -30,6 +30,7 @@ app.add_middleware(
 
 # Request model
 class TripRequest(BaseModel):
+    nationality: str = Field(default="India", example="India")
     country: str = Field(..., example="Japan")
     total_duration: int = Field(..., ge=3, le=30, example=14)
     interests: List[str] = Field(..., example=["temples", "food", "technology"])
@@ -67,6 +68,7 @@ async def plan_trip(request: TripRequest):
     try:
         # Prepare initial state
         initial_state = {
+            "nationality": request.nationality,
             "country": request.country,
             "total_duration": request.total_duration,
             "interests": request.interests,

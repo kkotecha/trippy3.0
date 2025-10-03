@@ -5,6 +5,7 @@ class TripPlannerState(TypedDict):
     """State that flows through all agents in the workflow"""
 
     # User inputs (immutable)
+    nationality: str
     country: str
     total_duration: int
     interests: List[str]
