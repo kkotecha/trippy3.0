@@ -23,12 +23,22 @@ app = FastAPI(
 allowed_origins = [
     "http://localhost:3000",
     "http://localhost:8000",
+    "https://trippy3-0.vercel.app",
     config.FRONTEND_URL,
 ]
 
 # In production, only allow specific origins
 if config.ENVIRONMENT == "production":
-    allowed_origins = [config.FRONTEND_URL]
+    allowed_origins = [
+        "https://trippy3-0.vercel.app",
+        config.FRONTEND_URL
+    ]
+
+# Debug logging
+print(f"🔒 CORS Configuration:")
+print(f"   Environment: {config.ENVIRONMENT}")
+print(f"   FRONTEND_URL: {config.FRONTEND_URL}")
+print(f"   Allowed Origins: {allowed_origins}")
 
 app.add_middleware(
     CORSMiddleware,
