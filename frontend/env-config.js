@@ -1,9 +1,7 @@
-// This file will be dynamically generated or manually updated for deployment
+// Production API URL configuration
 window.ENV = {
-    API_URL: '__API_URL__' // This will be replaced during deployment
+    API_URL: 'https://web-production-b5a4d.up.railway.app'
 };
 
-// For local development, use localhost if placeholder is still present
-if (window.ENV.API_URL === '__API_URL__' || !window.ENV.API_URL) {
-    window.ENV.API_URL = 'http://localhost:8000';
-}
+// For local development, uncomment the line below:
+// window.ENV.API_URL = 'http://localhost:8000';
