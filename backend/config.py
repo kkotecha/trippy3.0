@@ -12,6 +12,9 @@ OPENAI_TEMPERATURE = float(os.getenv("OPENAI_TEMPERATURE", "0.5"))
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 
+# CORS - Frontend URL
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
+
 # Arize Phoenix
 ARIZE_SPACE_ID = os.getenv("ARIZE_SPACE_ID")
 ARIZE_API_KEY = os.getenv("ARIZE_API_KEY")

@@ -19,10 +19,20 @@ app = FastAPI(
     version="2.0.0"
 )
 
-# CORS - allow all for local development
+# CORS - configure based on environment
+allowed_origins = [
+    "http://localhost:3000",
+    "http://localhost:8000",
+    config.FRONTEND_URL,
+]
+
+# In production, only allow specific origins
+if config.ENVIRONMENT == "production":
+    allowed_origins = [config.FRONTEND_URL]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

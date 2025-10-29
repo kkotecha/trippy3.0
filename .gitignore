@@ -5,9 +5,17 @@ venv/
 env/
 .env
 .env.local
+.env.production
 .vscode/
 .idea/
 *.log
 .phoenix/
 traces/
 .DS_Store
+node_modules/
+
+# Vercel
+.vercel
+
+# Railway
+railway.toml

@@ -1,4 +1,5 @@
-const API_URL = 'http://localhost:8000';
+// Use environment variable or fallback to localhost for development
+const API_URL = window.ENV?.API_URL || 'http://localhost:8000';
 
 let currentTab = '';
 let tripData = null;
