@@ -5,12 +5,15 @@ from typing import List, Optional
 import uvicorn
 import uuid
 
-from graph.workflow import app as workflow_app
+# IMPORTANT: Setup Phoenix BEFORE importing any LangChain modules
 from observability import setup_phoenix
 import config
 
-# Setup Phoenix
+# Setup Phoenix instrumentation first
 setup_phoenix()
+
+# NOW import LangChain-dependent modules
+from graph.workflow import app as workflow_app
 
 # Create FastAPI app
 app = FastAPI(
