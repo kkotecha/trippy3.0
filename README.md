@@ -1,6 +1,6 @@
 # Trippy 3.0 — Production Multi-City AI Trip Planner
 
-A production-grade multi-city journey planner using **9 LangGraph agents**, **11 live API tools**, and **Arize Phoenix Cloud observability**. Every mock tool from v2.0 has been replaced with real APIs (Google Maps, Tavily, Passport Index). Deployed on Railway + Vercel with full cost management and parallel agent execution.
+A production-grade multi-city journey planner using **9 LangGraph agents**, **11 live API tools**, and **Arize Phoenix Cloud observability**. Every mock tool from v2.0 has been replaced with real APIs (Google Maps, Tavily, Passport Index). Deployable on Railway + Vercel, with full cost management and parallel agent execution.
 
 **Part of a 3-project series:** See [Trippy v1](https://github.com/kkotecha/trippy) (foundations) and [Trippy 2.0](https://github.com/kkotecha/trippy2.0) (prototype with tool abstraction).
 
@@ -21,7 +21,6 @@ This version replaces every mock tool with live APIs, deploys to cloud infrastru
 | Currency | 4 hardcoded | **RestCountries + ExchangeRate-API** (live rates) |
 | Restaurants | None | **Google Places API** (real recommendations) |
 | Execution | Sequential only | **Parallel** (budget + logistics run simultaneously) |
-| Deployment | Local only | **Railway** (backend) + **Vercel** (frontend) |
 | Cost visibility | None | **Full cost breakdown** per trip across all APIs |
 
 ## Architecture
